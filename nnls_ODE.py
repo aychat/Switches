@@ -12,25 +12,24 @@ class nnl_ode:
     """
     Solve an equation system :math:`y'(t) = M(t)y` where y(t) is non-negative and M(t) is a matrix.
     """
-    def __init__(self, M, M_args=(), M_kwargs={}):
+    def __init__(self, M, M_args=()):
         """
 
-        :param M: callable ``M(t, *M_args, **M_kwargs)``
+        :param M: callable ``M(t, *M_args)``
                 The matrix in the Rhs of the equation. t is a scalar,
-                ``M_args`` and ``M_kwargs``is set by calling ``set_M_params(*M_args, **M_kwargs)``.
+                ``M_args`` is set by calling ``set_M_params(*M_args)``.
                 `M` should return an NxN container (e.g., array), where `N = len(y)` is the number of variables.
 
         :param M_params: (optional) parameters for user-supplied function ``M``
         """
         self.M = M
-        self.set_M_params(*M_args, **M_kwargs)
+        self.set_M_params(*M_args)
 
-    def set_M_params(self, *M_args, **M_kwargs):
+    def set_M_params(self, *M_args):
         """
         Set extra parameters for user-supplied function M.
         """
         self.M_args = M_args
-        self.M_kwargs = M_kwargs
         return self
 
     def set_initial_value(self, y, t=0.0):
@@ -84,14 +83,14 @@ class nnl_ode:
             #######################################################################################
 
             # Initial guess for the time-step
-            dt = 0.25 / norm(self.M(self.t, *self.M_args, **self.M_kwargs))
+            dt = 0.25 / norm(self.M(self.t, *self.M_args))
 
             # time step must not take as above t_final
             dt = sign_dt * min(dt, abs(t_final - self.t))
 
             # Loop until optimal value of dt is not found (adaptive step size integrator)
             while True:
-                M = self.M(self.t + 0.5 * dt, *self.M_args, **self.M_kwargs)
+                M = self.M(self.t + 0.5 * dt, *self.M_args)
                 M = np.array(M, copy=False)
                 M *= -dt
 
